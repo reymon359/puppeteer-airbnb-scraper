@@ -15,7 +15,7 @@ const URL = 'https://www.airbnb.com/s/Copenhagen/homes?refinement_paths%5B%5D=%2
 async function scrapeHomesInIndexPage(url) {
     try {
         const page = await browser.newPage();
-        await page.goto(url);
+        await page.goto(url, { waitUntil: 'networkidle2' });
         const html = await page.evaluate(() => document.body.innerHTML);
         const $ = await cheerio.load(html);
 
@@ -32,7 +32,22 @@ async function scrapeHomesInIndexPage(url) {
 
 async function scrapeDescriptionPage(url, page) {
     try {
-        await page.goto(url);
+        await page.goto(url, { waitUntil: 'networkidle2' });
+        const html = await page.evaluate(() => document.body.innerHTML);
+        const $ = await cheerio.load(html);
+
+        const pricePerNight = $('#room > div > div > div > div > div > div > div > div > div > div > div > div > div > div > div > div > div > div > div > span > span').text();
+
+        const roomText = $('#room').text();
+
+        const guestMatches = roomText.match(/\d+ guest/);
+
+        let guestsAllowed = 'N/A';
+
+        if (guestMatches.length > 0) {
+            guestsAllowed = guestMatches[0];
+        }
+        return { pricePerNight, guestsAllowed };
     } catch (error) {
         console.error(error);
     }
