@@ -21,15 +21,19 @@ async function scrapeHomesInIndexPage(url) {
         const html = await page.evaluate(() => document.body.innerHTML);
         const $ = await cheerio.load(html);
 
-        const homes = $("[itemprop='url']").map((i, element) =>
-            $(element).attr('content')
-        ).get();
-
-        console.log(homes);
+        const homes = $("[itemprop='url']")
+            .map((i, element) => 'https://' + $(element).attr('content'))
+            .get();
+        return homes;
 
     } catch (err) {
         console.error(err);
     }
 }
 
-scrapeHomesInIndexPage(URL);
+async function main() {
+    const homes = await scrapeHomesInIndexPage(URL);
+    console.log(homes);
+}
+
+main();
